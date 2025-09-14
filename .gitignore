@@ -13,6 +13,8 @@ out/
 !**/src/test/**/out/
 
 config.json
+items.json
+itemsNew.json
 
 ### Eclipse ###
 .apt_generated

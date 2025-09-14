@@ -7,7 +7,7 @@ import java.net.http.HttpResponse.BodyHandlers
 import java.net.{CookieManager, URI}
 import java.net.http.{HttpClient, HttpRequest}
 
-def request(): Document =
+def request(region: String): Document =
     val client = HttpClient
         .newBuilder()
         .cookieHandler(CookieManager())
@@ -15,7 +15,7 @@ def request(): Document =
 
     val request = HttpRequest
         .newBuilder()
-        .uri(URI.create("https://summer.hackclub.com/shop"))
+        .uri(URI.create(s"https://summer.hackclub.com/shop?region=$region"))
         .header("Cookie", readConfig().cookie)
         .GET()
         .build()

@@ -5,9 +5,10 @@ import com.slack.api.bolt.socket_mode.SocketModeApp
 import com.slack.api.bolt.{App, AppConfig}
 import com.slack.api.methods.request.chat.ChatPostMessageRequest.ChatPostMessageRequestBuilder
 import org.jsoup.nodes.Node
-import upickle.{ReadWriter, macroRW, read}
+import upickle.{ReadWriter, macroRW, read, write}
 
-import java.io.{File, FileInputStream}
+import java.io.{File, FileInputStream, FileOutputStream}
+import java.util
 import scala.util.Using
 
 @main
@@ -26,7 +27,7 @@ def main(): Unit = {
     while(true) {
         Thread.sleep(60 * 1000) //1min
     }*/
-    SomItemParser.parseAll()
+    ChangeDetector.detectChanges()
 }
 
 def readConfig() =
