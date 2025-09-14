@@ -22,12 +22,10 @@ def main(): Unit = {
     val socket = SocketModeApp(config.appToken, app)
     socket.startAsync()
 
-
-
     while(true) {
         Thread.sleep(60 * 1000) //1min
     }*/
-    ChangeDetector.detectChanges()
+    ChangeDetector.detectChanges(null)
 }
 
 def readConfig() =
