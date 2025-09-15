@@ -8,7 +8,7 @@ import java.net.http.HttpResponse.BodyHandlers
 import java.net.http.{HttpClient, HttpRequest}
 import java.net.{CookieManager, URI}
 
-def request(region: String): Document =
+def request(region: String): Option[Document] =
     val client = HttpClient
         .newBuilder()
         .cookieHandler(CookieManager())
@@ -22,4 +22,7 @@ def request(region: String): Document =
         .build()
 
     val resp = client.send(request, BodyHandlers.ofString())
-    Jsoup.parse(resp.body())
+    if resp.statusCode() == 200 then
+        Some(Jsoup.parse(resp.body()))
+    else
+        None

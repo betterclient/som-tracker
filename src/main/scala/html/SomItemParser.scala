@@ -23,14 +23,16 @@ object SomItemParser {
 
     private def parseRegion(region: String): List[RegionlessSomItem] =
         println(s"Parse $region")
-        val r = request(region).body()
-        r.select("[id^=item-]").toArray(Array[Element]()).map(parseItem(region, _)).toList
+        val r = request(region).map(_.body())
+        if(r.isEmpty) List()
+        else r.get.select("[id^=item-]").toArray(Array[Element]()).map(parseItem(region, _)).toList
 
     def parseAll(): ListBuffer[SomItem] = {
         val regionlessItems = List(
             parseRegion("US"), parseRegion("EU"), parseRegion("IN"),
             parseRegion("CA"), parseRegion("AU"), parseRegion("XX")
         )
+        if(regionlessItems.exists(_.isEmpty)) return ListBuffer()
 
         val regionItems = ListBuffer[IntermediateItem]()
         regionlessItems.flatten.foreach(item => {
@@ -50,12 +52,12 @@ object SomItemParser {
                 item.id.toInt,
                 item.name,
                 item.desscription,
-                item.priceMap.getOrElse("US", -1),
-                item.priceMap.getOrElse("EU", -1),
-                item.priceMap.getOrElse("IN", -1),
-                item.priceMap.getOrElse("CA", -1),
-                item.priceMap.getOrElse("AU", -1),
-                item.priceMap.getOrElse("XX", -1),
+                item.priceMap.getOrElse("US", -2),
+                item.priceMap.getOrElse("EU", -2),
+                item.priceMap.getOrElse("IN", -2),
+                item.priceMap.getOrElse("CA", -2),
+                item.priceMap.getOrElse("AU", -2),
+                item.priceMap.getOrElse("XX", -2),
                 item.stock,
                 item.image
             )

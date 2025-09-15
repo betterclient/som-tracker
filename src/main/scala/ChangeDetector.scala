@@ -23,9 +23,11 @@ object ChangeDetector {
             .map(String(_)) //byte[] -> string
             .map(read[List[SomItem]](_)) //string -> List
             .getOrElse(List()) //you suck
-        
+
+        val items = SomItemParser.parseAll()
+        if(items.isEmpty) return //no no no
         if(old.isEmpty) {
-            val current = SomItemParser.parseAll().toList
+            val current = items.toList
             File("items.json").delete()
             Using(FileOutputStream("items.json")) {
                 _.write(write(current, indent = 4).getBytes)
@@ -34,7 +36,7 @@ object ChangeDetector {
         }
 
         println("Stage 1")
-        val current = SomItemParser.parseAll().toList
+        val current = items.toList
 
         var ping = false
         println("Stage 2")

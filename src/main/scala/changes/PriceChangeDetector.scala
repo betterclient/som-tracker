@@ -49,4 +49,4 @@ object PriceChangeDetector extends BaseDetector {
 }
 
 extension (i: Int) def asPriceString: String =
-    if i == -1 then "Free" else i.toString
+    if i == -1 then "Free" else if i == -2 then "Not sold" else i.toString

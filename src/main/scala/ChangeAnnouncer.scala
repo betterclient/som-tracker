@@ -5,7 +5,7 @@ import html.SomItem
 import com.slack.api.methods.MethodsClient
 import com.slack.api.methods.request.chat.ChatPostMessageRequest
 import com.slack.api.model.block.composition.MarkdownTextObject
-import com.slack.api.model.block.{ContextBlock, DividerBlock, ImageBlock, LayoutBlock, SectionBlock}
+import com.slack.api.model.block.{ContextBlock, DividerBlock, ImageBlock, LayoutBlock}
 
 import scala.jdk.CollectionConverters.*
 
