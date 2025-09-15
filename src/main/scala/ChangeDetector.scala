@@ -1,6 +1,6 @@
 package io.github.betterclient.tracker
 
-import changes.detectors
+import changes.{asPriceString, detectors}
 import html.{SomItem, SomItemParser, itemRW}
 
 import com.slack.api.methods.MethodsClient
@@ -89,12 +89,12 @@ object ChangeDetector {
             .build()
 
         val pricesText =
-            s"""|:flag-us: United States: ${item.priceUS}
-                |:flag-eu: :gb: Europe + United Kingdom: ${item.priceEU}
-                |:flag-in: India: ${item.priceIN}
-                |:flag-ca: Canada: ${item.priceCA}
-                |:flag-au: ∀nsʇɹɐlᴉɐ: ${item.priceAU}
-                |:earth: Rest of the world: ${item.priceXX}""".stripMargin
+            s"""|:flag-us: United States: ${item.priceUS.asPriceString}
+                |:flag-eu: :gb: Europe + United Kingdom: ${item.priceEU.asPriceString}
+                |:flag-in: India: ${item.priceIN.asPriceString}
+                |:flag-ca: Canada: ${item.priceCA.asPriceString}
+                |:flag-au: ∀nsʇɹɐlᴉɐ: ${item.priceAU.asPriceString}
+                |:earth: Rest of the world: ${item.priceXX.asPriceString}""".stripMargin
 
         blocks += SectionBlock.builder()
             .text(PlainTextObject.builder().text(pricesText).build())
