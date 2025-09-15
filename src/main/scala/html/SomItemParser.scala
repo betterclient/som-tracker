@@ -1,4 +1,5 @@
 package io.github.betterclient.tracker
+package html
 
 import org.jsoup.nodes.Element
 import upickle.{ReadWriter, macroRW}
@@ -21,6 +22,7 @@ object SomItemParser {
     }
 
     private def parseRegion(region: String): List[RegionlessSomItem] =
+        println(s"Parse $region")
         val r = request(region).body()
         r.select("[id^=item-]").toArray(Array[Element]()).map(parseItem(region, _)).toList
 
@@ -30,32 +32,32 @@ object SomItemParser {
             parseRegion("CA"), parseRegion("AU"), parseRegion("XX")
         )
 
-        val regionItems = ListBuffer[(String, String, String, mutable.HashMap[String, Int], Int, String)]()
+        val regionItems = ListBuffer[IntermediateItem]()
         regionlessItems.flatten.foreach(item => {
-            if (regionItems.exists(_._1 == item.id)) {
+            if (regionItems.exists(_.id == item.id)) {
                 //just add it to the existing one
-                regionItems.find(_._1 == item.id).get._4(item.region) = item.price
+                regionItems.find(_.id == item.id).get._4(item.region) = item.price
             } else {
                 //new
                 regionItems.addOne(
-                    (item.id, item.name, item.description, mutable.HashMap((item.region, item.price)), item.stock, item.image)
+                    IntermediateItem(item.id, item.name, item.description, mutable.HashMap((item.region, item.price)), item.stock, item.image)
                 )
             }
         })
 
         regionItems.map(item => {
             SomItem(
-                item._1.toInt,
-                item._2,
-                item._3,
-                item._4.getOrElse("US", -1),
-                item._4.getOrElse("EU", -1),
-                item._4.getOrElse("IN", -1),
-                item._4.getOrElse("CA", -1),
-                item._4.getOrElse("AU", -1),
-                item._4.getOrElse("XX", -1),
-                item._5,
-                item._6
+                item.id.toInt,
+                item.name,
+                item.desscription,
+                item.priceMap.getOrElse("US", -1),
+                item.priceMap.getOrElse("EU", -1),
+                item.priceMap.getOrElse("IN", -1),
+                item.priceMap.getOrElse("CA", -1),
+                item.priceMap.getOrElse("AU", -1),
+                item.priceMap.getOrElse("XX", -1),
+                item.stock,
+                item.image
             )
         })
     }
@@ -70,6 +72,16 @@ case class RegionlessSomItem
     price: Int,
     stock: Int,
     image: String,
+)
+
+case class IntermediateItem
+(
+    id: String,
+    name: String,
+    desscription: String,
+    priceMap: mutable.HashMap[String, Int],
+    stock: Int,
+    image: String
 )
 
 implicit val itemRW: ReadWriter[SomItem] = macroRW

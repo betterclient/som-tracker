@@ -1,11 +1,12 @@
 package io.github.betterclient.tracker
+package html
 
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 
 import java.net.http.HttpResponse.BodyHandlers
-import java.net.{CookieManager, URI}
 import java.net.http.{HttpClient, HttpRequest}
+import java.net.{CookieManager, URI}
 
 def request(region: String): Document =
     val client = HttpClient
@@ -16,7 +17,7 @@ def request(region: String): Document =
     val request = HttpRequest
         .newBuilder()
         .uri(URI.create(s"https://summer.hackclub.com/shop?region=$region"))
-        .header("Cookie", readConfig().cookie)
+        .header("Cookie", config.cookie)
         .GET()
         .build()
 

@@ -1,92 +1,111 @@
 package io.github.betterclient.tracker
 
+import changes.detectors
+import html.{SomItem, SomItemParser, itemRW}
+
 import com.slack.api.methods.MethodsClient
+import com.slack.api.model.block.composition.PlainTextObject
+import com.slack.api.model.block.{HeaderBlock, LayoutBlock, SectionBlock}
+import upickle.default.{read, write}
 
 import java.io.{File, FileInputStream, FileOutputStream}
+import scala.collection.mutable.ListBuffer
 import scala.util.Using
-import upickle.default.{read, write}
 
 object ChangeDetector {
     def detectChanges(client: MethodsClient): Unit = {
-        val old = read[List[SomItem]](String(Using(FileInputStream("items.json")) { _.readAllBytes() }.get))
+        println("Stage 0")
+        val old = Using(
+            FileInputStream("items.json")
+        ) {
+            _.readAllBytes()
+        }
+            .map(String(_)) //byte[] -> string
+            .map(read[List[SomItem]](_)) //string -> List
+            .getOrElse(List()) //you suck
+        
+        if(old.isEmpty) {
+            val current = SomItemParser.parseAll().toList
+            File("items.json").delete()
+            Using(FileOutputStream("items.json")) {
+                _.write(write(current, indent = 4).getBytes)
+            }
+            return //don't spam if something went wrong, just write correct and wait for next
+        }
+
+        println("Stage 1")
         val current = SomItemParser.parseAll().toList
 
         var ping = false
-        var changes = false
+        println("Stage 2")
         for ((oldItem, newItem) <- old.map(i => (i, current.find(_.id == i.id).orNull))) {
-            scala.util.control.Breaks.breakable {
-                if(newItem == null) {
-                    //deleted!
-                    ping = true
-                    println(s":deleted: ${oldItem.name}")
-                    scala.util.control.Breaks.break()
+            var changes = false
+            val finalMessage = ListBuffer[LayoutBlock]()
+            if(newItem == null) {
+                //deleted!
+                finalMessage.addOne(
+                    HeaderBlock.builder().text(PlainTextObject(s":win10-trash: ${oldItem.name}\n", true)).build()
+                )
+                changes = true; ping = true
+            } else {
+                for (dc <- detectors) {
+                    val out = dc.detect(oldItem, newItem)
+                    if(out.changed) changes = true
+                    if(out.ping) ping = true
+                    out.block.map(finalMessage.addOne)
                 }
+            }
 
-                detectGeneralChanges(oldItem, newItem, () => { changes = true }, () => { ping = true })
+            if(changes) {
+                //send message
+                ChangeAnnouncer.announce(client, finalMessage.toList, oldItem)
             }
         }
 
+        println("Stage 3")
         for(newItem <- current.filter(i => !old.exists(i.id == _.id))) {
             ping = true
-            println(s":new: ${newItem.name}")
+            val finalMessage = ListBuffer[LayoutBlock]()
+            buildNewItemMessage(finalMessage, newItem)
+            ChangeAnnouncer.announce(client, finalMessage.toList, newItem)
         }
-        if(ping) changes = true
 
+        println("Stage 4")
         File("items.json").delete()
         Using(FileOutputStream("items.json")) {
             _.write(write(current, indent = 4).getBytes)
         }
     }
 
-    private def detectGeneralChanges(oldItem: SomItem, newItem: SomItem, changed: () => Unit, ping: () => Unit): Unit = {
-        if (newItem.name != oldItem.name) {
-            changed()
-            println(s"${oldItem.name} -> ${newItem.name}")
+    private def buildNewItemMessage(blocks: ListBuffer[LayoutBlock], item: SomItem): Unit = {
+        blocks += HeaderBlock.builder()
+            .text(PlainTextObject.builder().text(s":new: ${item.name}").emoji(true).build())
+            .build()
+
+        blocks += SectionBlock.builder()
+            .text(PlainTextObject.builder().text(item.description).build())
+            .build()
+
+        val pricesText =
+            s"""|:flag-us: United States: ${item.priceUS}
+                |:flag-eu: :gb: Europe + United Kingdom: ${item.priceEU}
+                |:flag-in: India: ${item.priceIN}
+                |:flag-ca: Canada: ${item.priceCA}
+                |:flag-au: ∀nsʇɹɐlᴉɐ: ${item.priceAU}
+                |:earth: Rest of the world: ${item.priceXX}""".stripMargin
+
+        blocks += SectionBlock.builder()
+            .text(PlainTextObject.builder().text(pricesText).build())
+            .build()
+
+        val stockText = item.stock match {
+            case -1 => "Infinite"
+            case 0 => "Out of stock"
+            case n => n.toString
         }
 
-        if (newItem.description != oldItem.description) {
-            changed()
-            println(s"${oldItem.description} -> ${newItem.description}")
-        }
-
-        if (newItem.description != oldItem.description) {
-            changed()
-            println(s"${oldItem.description} -> ${newItem.description}")
-        }
-
-        if (newItem.priceUS != oldItem.priceUS) {
-            ping()
-            println(s"United states: ${oldItem.priceUS} -> ${newItem.priceUS}")
-        }
-
-        if (newItem.priceEU != oldItem.priceEU) {
-            ping()
-            println(s"Europe: ${oldItem.priceEU} -> ${newItem.priceEU}")
-        }
-
-        if (newItem.priceIN != oldItem.priceIN) {
-            ping()
-            println(s"India: ${oldItem.priceIN} -> ${newItem.priceIN}")
-        }
-
-        if (newItem.priceCA != oldItem.priceCA) {
-            ping()
-            println(s"Canada: ${oldItem.priceCA} -> ${newItem.priceCA}")
-        }
-
-        if (newItem.priceAU != oldItem.priceAU) {
-            ping()
-            println(s"∀nsʇɹɐlᴉɐ: ${oldItem.priceAU} -> ${newItem.priceAU}")
-        }
-
-        if (newItem.priceXX != oldItem.priceXX) {
-            ping()
-            println(s"Rest of the world: ${oldItem.priceXX} -> ${newItem.priceXX}")
-        }
-
-        if (newItem.stock != oldItem.stock) {
-            changed()
-            println(s"Stock: ${oldItem.stock} -> ${newItem.stock}")
-        }
+        blocks += SectionBlock.builder()
+            .text(PlainTextObject.builder().text(s"Stock: $stockText").build())
+            .build()
     }
 }
