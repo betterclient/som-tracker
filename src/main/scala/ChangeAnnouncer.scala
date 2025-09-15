@@ -5,7 +5,7 @@ import html.SomItem
 import com.slack.api.methods.MethodsClient
 import com.slack.api.methods.request.chat.ChatPostMessageRequest
 import com.slack.api.model.block.composition.MarkdownTextObject
-import com.slack.api.model.block.{ContextBlock, DividerBlock, ImageBlock, LayoutBlock}
+import com.slack.api.model.block.{ContextBlock, DividerBlock, ImageBlock, LayoutBlock, SectionBlock}
 
 import scala.jdk.CollectionConverters.*
 
@@ -27,6 +27,17 @@ object ChangeAnnouncer {
           .blocks(finalBlocks.asJava)
           .channel(config.botChannel)
           .build()
+        )
+    }
+
+    def ping(client: MethodsClient): Unit = {
+        client.chatPostMessage(ChatPostMessageRequest
+            .builder()
+            .text(s"<!subteam^${config.ping}>")
+            .mrkdwn(true)
+            .linkNames(true)
+            .channel(config.botChannel)
+            .build()
         )
     }
 }

@@ -17,7 +17,8 @@ Built with Scala❤️.
   "appToken": "Token that starts with \"xapp\"",
   "cookie": "See instructions below",
   "botChannel": "Slack channel for bot outputs (id)",
-  "debugChannel": "Slack channel for debugging (id)"
+  "debugChannel": "Slack channel for debugging (id)",
+  "ping": "Slack ping group (id)"
 }
 ```
 - Getting your cookie:

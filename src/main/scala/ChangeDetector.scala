@@ -70,6 +70,8 @@ object ChangeDetector {
             ChangeAnnouncer.announce(client, finalMessage.toList, newItem)
         }
 
+        if(ping) ChangeAnnouncer.ping(client)
+        
         println("Stage 4")
         File("items.json").delete()
         Using(FileOutputStream("items.json")) {

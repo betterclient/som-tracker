@@ -48,5 +48,6 @@ case class Config
     appToken: String,
     cookie: String,
     botChannel: String,
-    debugChannel: String
+    debugChannel: String,
+    ping: String
 )
