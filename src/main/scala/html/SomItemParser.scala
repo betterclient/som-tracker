@@ -38,7 +38,7 @@ object SomItemParser {
         regionlessItems.flatten.foreach(item => {
             if (regionItems.exists(_.id == item.id)) {
                 //just add it to the existing one
-                regionItems.find(_.id == item.id).get._4(item.region) = item.price
+                regionItems.find(_.id == item.id).get.priceMap(item.region) = item.price
             } else {
                 //new
                 regionItems.addOne(
@@ -51,7 +51,7 @@ object SomItemParser {
             SomItem(
                 item.id.toInt,
                 item.name,
-                item.desscription,
+                item.description,
                 item.priceMap.getOrElse("US", -2),
                 item.priceMap.getOrElse("EU", -2),
                 item.priceMap.getOrElse("IN", -2),
@@ -80,7 +80,7 @@ case class IntermediateItem
 (
     id: String,
     name: String,
-    desscription: String,
+    description: String,
     priceMap: mutable.HashMap[String, Int],
     stock: Int,
     image: String

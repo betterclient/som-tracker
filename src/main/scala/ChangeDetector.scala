@@ -60,7 +60,7 @@ object ChangeDetector {
 
             if(changes) {
                 //send message
-                ChangeAnnouncer.announce(client, finalMessage.toList, oldItem)
+                ChangeAnnouncer.announce(client, finalMessage.toList, oldItem, newItem != null)
             }
         }
 

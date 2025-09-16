@@ -10,13 +10,17 @@ import com.slack.api.model.block.{ContextBlock, DividerBlock, ImageBlock, Layout
 import scala.jdk.CollectionConverters.*
 
 object ChangeAnnouncer {
-    def announce(methods: MethodsClient, finalMessage: List[LayoutBlock], item: SomItem): Unit = {
+    def announce(methods: MethodsClient, finalMessage: List[LayoutBlock], item: SomItem, buyButton: Boolean = true): Unit = {
         val finalBlocks = finalMessage ++ Seq(
             ImageBlock.builder().imageUrl(item.image).altText("Som tracker").build(),
             DividerBlock.builder().build(),
             ContextBlock.builder().elements(
                 List(
-                    MarkdownTextObject(s"<https://summer.hackclub.com/shop/items/${item.id}/buy|Buy>", false)
+                    if(buyButton) {
+                        MarkdownTextObject(s"<https://summer.hackclub.com/shop/items/${item.id}/buy|Buy> <https://github.com/betterclient/som-tracker|Star the repository>", false)
+                    } else {
+                        MarkdownTextObject("<https://github.com/betterclient/som-tracker|Star the repository>", false)
+                    }
                 ).asJava
             ).build()
         )
