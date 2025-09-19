@@ -4,6 +4,7 @@ package html
 import org.jsoup.nodes.Element
 import upickle.{ReadWriter, macroRW}
 
+import java.util.concurrent.atomic.AtomicBoolean
 import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
 
@@ -15,9 +16,16 @@ object SomItemParser {
         val itemImage = e.select("img.rounded-lg.w-full.h-auto.object-scale-down.aspect-square.max-h-48").attr("src")
         val itemStock = Option(e.select("p.text-sm.text-orange-600.font-semibold.mt-2").first()).map(_.text()).map(i => i.substring(0, i.indexOf(' ')).toInt).getOrElse(-1)
         val itemID = e.id().substring(e.id().indexOf("-") + 1)
+        val itemDiscountedPrice = Option(e.selectFirst("div.absolute.top-0.left-0.flex.items-center.text-2xl.font-black.text-red-600 > picture.inline-block.w-6.h-6.mr-2"))
+            .map(_.nextSibling()).map(_.toString.trim).map(_.toInt).getOrElse(-1)
 
         RegionlessSomItem(
-            reg, itemID, itemName, itemDescription, itemPrice, itemStock, itemImage
+            reg, itemID, itemName, itemDescription,
+            if(itemDiscountedPrice != -1)
+                itemDiscountedPrice
+            else
+                itemPrice,
+            itemStock, itemImage, itemDiscountedPrice != -1
         )
     }
 
@@ -38,11 +46,13 @@ object SomItemParser {
         regionlessItems.flatten.foreach(item => {
             if (regionItems.exists(_.id == item.id)) {
                 //just add it to the existing one
-                regionItems.find(_.id == item.id).get.priceMap(item.region) = item.price
+                val value = regionItems.find(_.id == item.id).get
+                value.priceMap(item.region) = item.price
+                if(item.hasSale) value.hasSale.set(true)
             } else {
                 //new
                 regionItems.addOne(
-                    IntermediateItem(item.id, item.name, item.description, mutable.HashMap((item.region, item.price)), item.stock, item.image)
+                    IntermediateItem(item.id, item.name, item.description, mutable.HashMap((item.region, item.price)), item.stock, item.image, AtomicBoolean(item.hasSale))
                 )
             }
         })
@@ -59,7 +69,8 @@ object SomItemParser {
                 item.priceMap.getOrElse("AU", -2),
                 item.priceMap.getOrElse("XX", -2),
                 item.stock,
-                item.image
+                item.image,
+                item.hasSale.get()
             )
         })
     }
@@ -74,6 +85,7 @@ case class RegionlessSomItem
     price: Int,
     stock: Int,
     image: String,
+    hasSale: Boolean
 )
 
 case class IntermediateItem
@@ -83,21 +95,23 @@ case class IntermediateItem
     description: String,
     priceMap: mutable.HashMap[String, Int],
     stock: Int,
-    image: String
+    image: String,
+    hasSale: AtomicBoolean
 )
 
 implicit val itemRW: ReadWriter[SomItem] = macroRW
 case class SomItem
 (
-  id: Int,
-  name: String,
-  description: String,
-  priceUS: Int,
-  priceEU: Int,
-  priceIN: Int,
-  priceCA: Int,
-  priceAU: Int,
-  priceXX: Int,
-  stock: Int,
-  image: String,
+    id: Int,
+    name: String,
+    description: String,
+    priceUS: Int,
+    priceEU: Int,
+    priceIN: Int,
+    priceCA: Int,
+    priceAU: Int,
+    priceXX: Int,
+    stock: Int,
+    image: String,
+    hasSale: Boolean
 )

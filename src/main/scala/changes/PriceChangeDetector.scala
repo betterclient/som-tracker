@@ -10,6 +10,14 @@ object PriceChangeDetector extends BaseDetector {
     override def detect(oldItem: SomItem, newItem: SomItem): DetectionResult = {
         var ping = false
         var outMessage = ""
+        if (oldItem.hasSale != newItem.hasSale) {
+            if (newItem.hasSale) {
+                outMessage += "Item is on sale!! :ultrafastparrot:\n"
+            } else {
+                outMessage += "Sale over :pensive:\n"
+            }
+        }
+
         if (newItem.priceUS != oldItem.priceUS) {
             ping = true
             outMessage += s":us: United states: ${oldItem.priceUS.asPriceString} -> ${newItem.priceUS.asPriceString}\n"
