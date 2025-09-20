@@ -50,10 +50,11 @@ object ChangeAnnouncer {
         )
     }
 
-    def ping(client: MethodsClient): Unit = {
+    def ping(client: MethodsClient, updated: String): Unit = {
+        println("Run ping.")
         client.chatPostMessage(ChatPostMessageRequest
             .builder()
-            .text(s"<!subteam^${config.ping}>")
+            .text(s"<!subteam^${config.ping}>, Updated Items $updated.")
             .mrkdwn(true)
             .linkNames(true)
             .channel(config.botChannel)

@@ -15,7 +15,7 @@ object StockChangeDetector extends BaseDetector {
                 case n if n > 0 => s"$n items"
             }
 
-            DetectionResult(
+            return DetectionResult(
                 false, true, Option(
                     SectionBlock.builder().text(PlainTextObject(s"Stock: ${stockStr(oldItem.stock)} -> ${stockStr(newItem.stock)}", true)).build()
                 )

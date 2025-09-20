@@ -39,6 +39,7 @@ object ChangeDetector {
         val current = items.toList
 
         var ping = false
+        val updatedItems = ListBuffer[String]()
         println("Stage 2")
         for ((oldItem, newItem) <- old.map(i => (i, current.find(_.id == i.id).orNull))) {
             var changes = false
@@ -48,11 +49,15 @@ object ChangeDetector {
                 finalMessage.addOne(
                     HeaderBlock.builder().text(PlainTextObject(s":win10-trash: ${oldItem.name}\n", true)).build()
                 )
+                updatedItems.addOne(newItem.name)
                 changes = true; ping = true
             } else {
                 for (dc <- detectors) {
                     val out = dc.detect(oldItem, newItem)
-                    if(out.changed) changes = true
+                    if(out.changed) {
+                        updatedItems.addOne(newItem.name)
+                        changes = true
+                    }
                     if(out.ping) ping = true
                     out.block.map(finalMessage.addOne)
                 }
@@ -66,13 +71,14 @@ object ChangeDetector {
 
         println("Stage 3")
         for(newItem <- current.filter(i => !old.exists(i.id == _.id))) {
+            updatedItems.addOne(newItem.name)
             ping = true
             val finalMessage = ListBuffer[LayoutBlock]()
             buildNewItemMessage(finalMessage, newItem)
             ChangeAnnouncer.announce(client, finalMessage.toList, newItem)
         }
 
-        if(ping) ChangeAnnouncer.ping(client)
+        if(ping) ChangeAnnouncer.ping(client, updatedItems.toList.mkString(", "))
         
         println("Stage 4")
         File("items.json").delete()

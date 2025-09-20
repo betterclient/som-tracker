@@ -11,6 +11,7 @@ object PriceChangeDetector extends BaseDetector {
         var ping = false
         var outMessage = ""
         if (oldItem.hasSale != newItem.hasSale) {
+            ping = true
             if (newItem.hasSale) {
                 outMessage += "Item is on sale!! :ultrafastparrot:\n"
             } else {
