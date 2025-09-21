@@ -41,7 +41,7 @@ object ChangeAnnouncer {
         }
         
         println("Stage 5")
-        Thread.sleep(1000) //file upload is async for some reason so we have to wait a bit
+        Thread.sleep(3000) //file upload is async for some reason so we have to wait a bit
         val response = methods.chatPostMessage(ChatPostMessageRequest
             .builder()
             .blocks(finalBlocks.asJava)
@@ -64,7 +64,7 @@ object ChangeAnnouncer {
 
     def generateImage(client: MethodsClient, channelID: String, url: String): Option[String] = {
         val fileDataResult = Try {
-            Using(new URI(url).toURL.openStream()) { _.readAllBytes() }.getOrElse(Array[Byte](0)) //sorry not sorry
+            Using(new URI(url).toURL.openStream()) { _.readAllBytes() }.getOrElse(Array[Byte]()) //sorry not sorry
         }.recover {
             case e: Exception => Array[Byte](0)
         }
