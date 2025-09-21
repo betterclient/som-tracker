@@ -49,7 +49,7 @@ object ChangeDetector {
                 finalMessage.addOne(
                     HeaderBlock.builder().text(PlainTextObject(s":win10-trash: ${oldItem.name}\n", true)).build()
                 )
-                updatedItems.addOne(newItem.name)
+                updatedItems.addOne(oldItem.name)
                 changes = true; ping = true
             } else {
                 for (dc <- detectors) {
