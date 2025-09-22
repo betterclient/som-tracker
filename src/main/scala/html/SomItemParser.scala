@@ -85,7 +85,8 @@ case class RegionlessSomItem
     price: Int,
     stock: Int,
     image: String,
-    hasSale: Boolean
+    hasSale: Boolean,
+    isBlackMarket: Boolean = false
 )
 
 case class IntermediateItem
@@ -96,7 +97,8 @@ case class IntermediateItem
     priceMap: mutable.HashMap[String, Int],
     stock: Int,
     image: String,
-    hasSale: AtomicBoolean
+    hasSale: AtomicBoolean,
+    isBlackMarket: Boolean = false
 )
 
 implicit val itemRW: ReadWriter[SomItem] = macroRW
@@ -113,5 +115,6 @@ case class SomItem
     priceXX: Int,
     stock: Int,
     image: String,
-    hasSale: Boolean
+    hasSale: Boolean,
+    isBlackMarket: Boolean = false
 )

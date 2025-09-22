@@ -1,7 +1,7 @@
 package io.github.betterclient.tracker
 
 import changes.{asPriceString, detectors}
-import html.{SomItem, SomItemParser, itemRW}
+import html.{BlackMarketItemParser, SomItem, SomItemParser, itemRW}
 
 import com.slack.api.methods.MethodsClient
 import com.slack.api.model.block.composition.PlainTextObject
@@ -25,6 +25,8 @@ object ChangeDetector {
             .getOrElse(List()) //you suck
 
         val items = SomItemParser.parseAll()
+        items.addAll(BlackMarketItemParser.parseAll())
+        
         if(items.isEmpty) return //no no no
         if(old.isEmpty) {
             val current = items.toList

@@ -5,8 +5,8 @@ import html.SomItem
 import com.slack.api.methods.MethodsClient
 import com.slack.api.methods.request.chat.ChatPostMessageRequest
 import com.slack.api.methods.request.files.FilesUploadV2Request
-import com.slack.api.model.block.composition.{MarkdownTextObject, SlackFileObject}
-import com.slack.api.model.block.{ContextBlock, DividerBlock, ImageBlock, LayoutBlock}
+import com.slack.api.model.block.composition.{MarkdownTextObject, PlainTextObject, SlackFileObject}
+import com.slack.api.model.block.{ContextBlock, DividerBlock, ImageBlock, LayoutBlock, SectionBlock}
 
 import java.net.URI
 import scala.jdk.CollectionConverters.*
@@ -20,6 +20,10 @@ object ChangeAnnouncer {
             image.foreach { id =>
                 blocks += ImageBlock.builder().slackFile(SlackFileObject.builder().id(id).build()).altText("Som tracker").build()
                 blocks += DividerBlock.builder().build()
+            }
+
+            if(item.isBlackMarket) {
+                blocks += SectionBlock.builder().text(PlainTextObject(":tophat: Black Market", true)).build()
             }
 
             blocks += ContextBlock.builder().elements(
@@ -54,7 +58,7 @@ object ChangeAnnouncer {
         println("Run ping.")
         client.chatPostMessage(ChatPostMessageRequest
             .builder()
-            .text(s"<!subteam^${config.ping}>, Updated Items $updated.")
+            .text(s"Updated Items $updated. <!subteam^${config.ping}>")
             .mrkdwn(true)
             .linkNames(true)
             .channel(config.botChannel)

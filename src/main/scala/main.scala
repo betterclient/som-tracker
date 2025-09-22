@@ -3,6 +3,7 @@ package io.github.betterclient.tracker
 import com.slack.api.bolt.socket_mode.SocketModeApp
 import com.slack.api.bolt.{App, AppConfig}
 import com.slack.api.methods.request.chat.ChatPostMessageRequest
+import io.github.betterclient.tracker.html.BlackMarketItemParser
 import upickle.{ReadWriter, macroRW, read}
 
 import java.io.FileInputStream
