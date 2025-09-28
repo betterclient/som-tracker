@@ -25,7 +25,7 @@ object ChangeDetector {
             .getOrElse(List()) //you suck
 
         val items = SomItemParser.parseAll()
-        items.addAll(BlackMarketItemParser.parseAll())
+        //items.addAll(BlackMarketItemParser.parseAll())
         
         if(items.isEmpty) return //no no no
         if(old.isEmpty) {
